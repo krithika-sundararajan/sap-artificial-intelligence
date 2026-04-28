@@ -103,11 +103,6 @@ test_steps:
             check: "The result contains a purchase order ID or confirmation number"
 ```
 
-> ### Note:
->
-> For tool call parameter validations, if using the value-based comparison, the type of the provided value matters. As only primitive types are supported at the moment, complex value validations can be covered using the LLM-based `check` instead of `value`.
-
-
 #### Dynamic Conversation Steps
 
 Dynamic conversation steps use an LLM-powered user agent to generate contextually appropriate responses based on conversation history. Use these for multi-turn interactions where agent responses may vary and require adaptive user behavior.
@@ -131,7 +126,6 @@ test_steps:
 ```
 
 The `max_turns` parameter serves as a safety limit to prevent runaway conversations. The conversation typically ends earlier when the user agent determines the task is complete or cannot proceed further.
-
 
 > ### Tip:
 >
@@ -264,7 +258,9 @@ tool_validations:
 
 > ### Note:
 >
-> Tool validations are trace-dependent and will be skipped if trace data is unavailable. This can occur when evaluating agents that don't provide OpenTelemetry traces or when running in traceless evaluation mode.
+> * Tool validations are trace-dependent and will be skipped if trace data is unavailable. This can occur when evaluating agents that don't provide OpenTelemetry traces or when running in traceless evaluation mode.
+> * For tool call parameter validations, if using the value-based comparison, the type of the provided value matters.
+> * As only primitive types are supported at the moment, complex value validations can be covered using the LLM-based `check` instead of `value`.
 
 ## Running the Evaluation
 
@@ -785,7 +781,10 @@ Content-Type: application/json
 - `0 */6 * * *`: Every 6 hours
 - `0 */12 * * *`: Every 12 hours
 - `0 0 * * *`: Daily at midnight
-- `0 9 * * 1-5`: Weekdays at 9 AM
+
+> ### Note:
+>
+> The Agent Evaluation service has a trace retention period of 24 hours. For schedules with a frequency of > 1 day, older data will be left out of the evaluation. 
 
 **Response:**
 
@@ -950,13 +949,11 @@ Establish processes to respond to evaluation results:
    - Minimum acceptable `success_rate` (e.g., 0.90 or 90%)
    - Maximum acceptable `rule_compliance` violation rate (e.g., 0.02 or 2%)
    - Latency percentiles for acceptable performance
-
 2. **Monitor Key Metrics Regularly**
 
    - Review online evaluation results after each scheduled run
    - Compare current metrics against baseline and thresholds
    - Investigate significant deviations
-
 3. **Respond to Quality Issues**
 
    - Review conversation samples from failed validations
