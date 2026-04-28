@@ -14,7 +14,7 @@ Before evaluating agents, ensure you have the following:
 
 ### General Prerequisites
 
-- **SAP AI Core** instance with access credentials
+- **SAP AI Core** instance with access credentials, on the 'internal' service plan
 - An orchestration deployment configured in SAP AI Core
 - A resource group configured in SAP AI Core for your evaluation workloads
 - The agent is built on the [Cloud SDK toolkit](https://github.tools.sap/application-foundation/cloud-sdk-python) and is running in the SAP managed runtime.
@@ -253,13 +253,13 @@ tool_validations:
 
 **Optional Components:**
 
-- `parameters`: Validates the correctness of parameters passed to the tool
-- `output`: Validates the correctness of the tool's output using natural language criteria
+- `parameters`: Validates the correctness of parameters passed to the tool. Can be expressed as an exact  `value` validation or natural language based `check`.
+- `output`: Validates the correctness of the tool's output. Can be expressed as an exact  `value` validation or natural language based `check`.
 
 > ### Note:
 >
 > * Tool validations are trace-dependent and will be skipped if trace data is unavailable. This can occur when evaluating agents that don't provide OpenTelemetry traces or when running in traceless evaluation mode.
-> * For tool call parameter validations, if using the value-based comparison, the type of the provided value matters.
+> * For tool call parameter and output validations, if using the value-based comparison, the type of the provided value matters.
 > * As only primitive types are supported at the moment, complex value validations can be covered using the LLM-based `check` instead of `value`.
 
 ## Running the Evaluation
@@ -297,6 +297,10 @@ Content-Type: application/json
       "value": "https://your-agent-endpoint.example.com"
     },
     {
+        "key": "agent_card_path",
+        "value": "your-agent-card-path-endpoint",
+    },
+    {
       "key": "test_suite_inline",
       "value": "[{\"id\":\"01_catalog_search\",\"description\":\"Basic catalog search\",\"test_steps\":[{\"type\":\"fixed_message\",\"input_message\":\"Search the catalog for office supplies\",\"agent_response_validations\":[{\"check\":\"The agent returns a list of office supply items from the catalog\"}],\"tool_validations\":{\"expected_tool_calls\":[{\"tool\":\"search_catalog\",\"parameters\":{\"query\":{\"value\":\"office supplies\"}}}]}}]}]"
     }
@@ -307,18 +311,15 @@ Content-Type: application/json
 **Parameter Descriptions:**
 
 - `agent_base_url`: The HTTP endpoint of your agent that the evaluation service will invoke
+- `agent_card_path` : A2A specific agent card path, typically `/.well-known/agent-card.json`
 - `test_suite_inline`: JSON-encoded array of test cases following the test case specification format (shown as a string, no control sequences like `\n`). For larger datasets, the data can also be compressed with gzip and encoded with base64 before passing in.
 
 **Response:**
 
 ```json
 {
-  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "name": "eval-offline-buyer-agent",
-  "executableId": "offline-agent-eval",
-  "scenarioId": "agent-evaluation",
-  "createdAt": "2026-04-28T10:30:00Z",
-  "modifiedAt": "2026-04-28T10:30:00Z"
+  "id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "message":"Configuration created"
 }
 ```
 
@@ -354,10 +355,10 @@ Content-Type: application/json
 
 ```json
 {
-  "id": "exec-x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
-  "configurationId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "status": "PENDING",
-  "createdAt": "2026-04-28T10:35:00Z"
+  "id": "dea6263e6283321b",
+  "message": "Execution scheduled",
+  "status": "UNKNOWN",
+  "targetStatus": "COMPLETED"
 }
 ```
 
@@ -384,7 +385,7 @@ Authorization: Bearer {{AUTH_TOKEN}}
 
 ```json
 {
-  "id": "exec-x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
+  "id": "dea6263e6283321b",
   "configurationId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "status": "COMPLETED",
   "createdAt": "2026-04-28T10:35:00Z",
@@ -450,7 +451,7 @@ Authorization: Bearer {{AUTH_TOKEN}}
 {
   "resources": [
     {
-      "executionId": "exec-x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
+      "executionId": "dea6263e6283321b",
       "metrics": [
         {
           "name": "success_rate",
@@ -732,11 +733,8 @@ Content-Type: application/json
 
 ```json
 {
-  "id": "online-cfg-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "name": "eval-online-buyer-agent",
-  "executableId": "online-agent-eval",
-  "scenarioId": "agent-evaluation",
-  "createdAt": "2026-04-28T11:00:00Z"
+  "id":"e5f6g7h8-e5f6-7890-efgh-ef1234567890",
+  "message":"Configuration created"
 }
 ```
 
@@ -766,7 +764,7 @@ Content-Type: application/json
 {
   "cron": "0 */6 * * *",
   "name": "buyer-agent-online-eval-schedule",
-  "configurationId": "online-cfg-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  "configurationId": "e5f6g7h8-e5f6-7890-efgh-ef1234567890"
 }
 ```
 
@@ -790,12 +788,8 @@ Content-Type: application/json
 
 ```json
 {
-  "id": "schedule-x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
-  "cron": "0 */6 * * *",
-  "name": "buyer-agent-online-eval-schedule",
-  "configurationId": "online-cfg-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "createdAt": "2026-04-28T11:05:00Z",
-  "status": "ACTIVE"
+	"id": "799b4e67-a213-40b9-9550-637fde75dbda",
+	"message": "Execution Schedule created"
 }
 ```
 
@@ -823,10 +817,10 @@ Authorization: Bearer {{AUTH_TOKEN}}
   "count": 2,
   "resources": [
     {
-      "id": "schedule-x1y2z3a4-b5c6-d7e8-f9g0-h1i2j3k4l5m6",
+      "id": "799b4e67-a213-40b9-9550-637fde75dbda",
       "cron": "0 */6 * * *",
       "name": "buyer-agent-online-eval-schedule",
-      "configurationId": "online-cfg-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "configurationId": "e5f6g7h8-e5f6-7890-efgh-ef1234567890",
       "status": "ACTIVE",
       "nextRunAt": "2026-04-28T12:00:00Z"
     }
