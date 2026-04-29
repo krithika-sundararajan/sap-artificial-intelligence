@@ -703,7 +703,7 @@ Content-Type: application/json
   "scenarioId": "{{SCENARIO_ID}}",
   "parameterBindings": [
     {
-      "key": "service_name",
+      "key": "agent_identifier",
       "value": "buyer-agent-production"
     },
     {
@@ -724,7 +724,7 @@ Content-Type: application/json
 
 **Parameter Descriptions:**
 
-- `service_name`: Identifier for your agent (corresponds to the `service.name` attribute of the agent identifier, in its trace data)
+- `agent_identifier`: Identifier for your agent (corresponds to the `sap.ord.id` / `service.name` attribute of the agent identifier, in its trace data; `sap.ord.id` will be matched first)
 - `lookback_duration`: Time window to analyze for conversations (e.g., "12h", "24h"). The maximum supported lookback duration is "24h".
 - `requirements_inline`: JSON-encoded array of evaluation requirements
 - `sampling_rate`: Decimal between 0 and 1 representing the percentage of conversations to evaluate (0.1 = 10%, 1.0 = 100%)
