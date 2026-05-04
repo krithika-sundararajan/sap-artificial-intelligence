@@ -266,7 +266,51 @@ tool_validations:
 
 To execute an offline evaluation using the SAP AI Core API:
 
-### Step 1: Create an Offline Evaluation Configuration
+### Step 1: Update the Default Secret for Evaluation Service
+
+Before running offline evaluations, configure the secret that the evaluation service will use to access your agent and any required backend services.
+
+The evaluation service expects a secret named `aeval-service-secret` containing all necessary authentication credentials (API keys, tokens, etc.) that your agent requires to function during evaluation.
+
+**Endpoint:**
+
+```
+PATCH {{AI_CORE_BASE_URL}}/v2/admin/secrets/aeval-service-secret
+```
+
+**Headers:**
+
+```
+AI-Resource-Group: {{RESOURCE_GROUP_ID}}
+Authorization: Bearer {{AUTH_TOKEN}}
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "data": {
+    "A2A_AUTH_URL": "<base64-encoded-value>",
+    "A2A_CLIENT_ID": "<base64-encoded-value>",
+    "A2A_CLIENT_SECRET": "<base64-encoded-value>"
+  }
+}
+```
+
+**Important Notes:**
+
+- All secret values in the `data` object must be base64-encoded
+- Use PATCH to update an existing secret or create it if it doesn't exist
+- Secret keys should match the environment variables your agent expects (e.g., `API_KEY`, `BACKEND_TOKEN`, etc.)
+
+**Example: Base64 Encoding a Secret Value**
+
+```bash
+echo -n "my-secret-value" | base64
+```
+
+### Step 2: Create an Offline Evaluation Configuration
 
 Create a configuration that defines your evaluation setup.
 
@@ -325,9 +369,9 @@ Content-Type: application/json
 
 Save the configuration `id` from the response for the next step.
 
-### Step 2: Trigger the Offline Evaluation Run
+### Step 3: Trigger the Offline Evaluation Run
 
-Execute the evaluation using the configuration ID from Step 1.
+Execute the evaluation using the configuration ID from Step 2.
 
 **Endpoint:**
 
@@ -364,7 +408,7 @@ Content-Type: application/json
 
 Save the execution `id` for monitoring and retrieving results.
 
-### Step 3: Monitor Evaluation Status
+### Step 4: Monitor Evaluation Status
 
 Check the status of your evaluation run to know when it completes.
 
@@ -401,7 +445,7 @@ Authorization: Bearer {{AUTH_TOKEN}}
 - `COMPLETED`: Evaluation finished successfully
 - `DEAD`: Evaluation encountered an error
 
-### Step 4: Retrieve Evaluation Logs (Optional)
+### Step 5: Retrieve Evaluation Logs (Optional)
 
 View detailed logs from the evaluation execution for debugging or detailed analysis.
 
@@ -655,7 +699,7 @@ Expected patterns of tool usage behavior (requires trace data).
   },
   {
     "details": "Agent searches the catalog and returns relevant results when the user requests items by name or category",
-    "category": "agent_response"
+    "category": "tool_call"
   },
   {
     "details": "The agent does not submit a purchase order without first confirming the order details with the user",
