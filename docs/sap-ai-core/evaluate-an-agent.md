@@ -17,7 +17,7 @@ Before evaluating agents, ensure you have the following:
 - **SAP AI Core** instance with access credentials, on the 'internal' service plan
 - An orchestration deployment configured in SAP AI Core
 - A resource group configured in SAP AI Core for your evaluation workloads
-- The agent is built on the [Cloud SDK toolkit](https://github.tools.sap/application-foundation/cloud-sdk-python) and is running in the SAP managed runtime.
+- The agent is built on the [Cloud SDK toolkit](https://github.tools.sap/application-foundation/cloud-sdk-python) and is running in the SAP managed Joule Studio runtime.
 
 ## Offline Evaluation
 
@@ -399,7 +399,7 @@ Authorization: Bearer {{AUTH_TOKEN}}
 - `PENDING`: Evaluation is queued but not yet started
 - `RUNNING`: Evaluation is currently executing
 - `COMPLETED`: Evaluation finished successfully
-- `FAILED`: Evaluation encountered an error
+- `DEAD`: Evaluation encountered an error
 
 ### Step 4: Retrieve Evaluation Logs (Optional)
 
